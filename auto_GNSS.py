@@ -11,14 +11,14 @@ rtk_events = '\\/store\global-data\Curinsta2\Bike_processing_Ignat\RTKLIB for BI
 ppk_bike_conf = '\\/store\/global-data\/Curinsta2\/Bike_processing_Ignat\/RTKLIB_bin-rtklib_2.4.3' + '\/ppk_bike.conf'
 
 ###### 3rd party soft paths #######
-gpsbabel_path = '\\/store\/global-data\/Curinsta2\/Bike_processing_Ignat\/GPSBabel'
-GPS_TRACK_EDITOR_path = "\\/store\/global-data\/Curinsta2\/Bike_processing_Ignat\/GPS Track Editor"
+gpsbabel_path = '\\/store\global-data\Curinsta2\Bike_processing_Ignat\GPSBabel'
+GPS_TRACK_EDITOR_path = "\\/store\global-data\Curinsta2\Bike_processing_Ignat\GPS Track Editor"
 
 ###### 3rd party soft cmds #######
 rnx2rtkp = 'rnx2rtkp'
 
-cmd_pos2kml = rtklib_path + '\/pos2kml.exe'
-cmd_babel = gpsbabel_path + "\/gpsbabel.exe"
+cmd_pos2kml = rtklib_path + '\pos2kml.exe'
+cmd_babel = gpsbabel_path + "\gpsbabel.exe"
 cmd_GPS_TRACK_EDITOR = GPS_TRACK_EDITOR_path + "\/GpsTrackEditor.exe"
 
 GPS_dir = os.getcwd()
@@ -122,16 +122,19 @@ for d in os.listdir():
     if d.__contains__('.pos') == True:
         pos_list.append(os.path.abspath(d))
 
+os.chdir(rtklib_path)
+
 if len(pos_list) > 0:
     print(len(pos_list), " .pos files found.")
     for pos in pos_list:
+        print(pos)
         if pos_list.index(pos) < len(pos_list) - 1:
-            cmd = cmd_pos2kml + " -tu " + pos
+            cmd = "pos2kml" + " -tu " + pos
             subprocess.Popen(cmd, shell=True)
             print("POS to KML for ", int(pos_list.index(pos)) + 1, " file")
             time.sleep(2)
         else:
-            cmd = cmd_pos2kml + " -tu " + pos
+            cmd = "pos2kml" + " -tu " + pos
             subprocess.Popen(cmd, shell=True).wait()
             print("POS to KML for ", int(pos_list.index(pos)) + 1, " file") 
 else:
@@ -142,15 +145,20 @@ print('POS to KML complete.')
 time.sleep(2)
 
 ### KML to GPX convertation. Pay attention with option flags - it's sensitive to output.
+
+os.chdir(GPS_dir + "\BASE\!pos-files")
+
 kml_list = []
 for d in os.listdir():
     if d.__contains__('.kml') == True:
         kml_list.append(os.path.abspath(d))
 
 os.chdir(gpsbabel_path)
+
 if len(kml_list) > 0:
     print(len(kml_list), " .kml files found.")
     for kml in kml_list:
+        print(kml)
         if kml_list.index(kml) < len(kml_list) - 1:
             cmd = "gpsbabel -w -i kml -f " + kml + \
                 " -x nuketypes,tracks -x transform,trk=wpt -x nuketypes,waypoints" + \
