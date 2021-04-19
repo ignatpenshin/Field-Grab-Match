@@ -5,21 +5,21 @@ import subprocess
 
 
 ### Folders:
-rtklib_path = 'Y:\/rtklib_2.4.2\/bin'
-rnx2rtkp = rtklib_path + '\/rnx2rtkp.exe'
-rtkpost = rtklib_path + "\/rtkpost.exe"
-ppk_bike_conf = 'Y:\/rtklib_2.4.2' + '\/ppk_bike.conf'
-rtk_events = "Y:\Curinsta2\RTKLIB for BIKE"
+rtklib_path = '\\/store\global-data\Curinsta2\Bike_processing_Ignat\RTKLIB_bin-rtklib_2.4.3\/bin'
+rtklib_242_path = '\\/store\global-data\Curinsta2\Bike_processing_Ignat\/rtklib_2.4.2\/bin'
+rtk_events = '\\/store\global-data\Curinsta2\Bike_processing_Ignat\RTKLIB for BIKE'
+ppk_bike_conf = '\\/store\/global-data\/Curinsta2\/Bike_processing_Ignat\/RTKLIB_bin-rtklib_2.4.3' + '\/ppk_bike.conf'
 
 ###### 3rd party soft paths #######
-pos2kml_path = 'Y:\/rtklib_2.4.2\/bin'
-gpsbabel_path = 'C:\Program Files (x86)\GPSBabel'
-GPS_TRACK_EDITOR_path = "C:\Program Files (x86)\GPS Track Editor"
+gpsbabel_path = '\\/store\/global-data\/Curinsta2\/Bike_processing_Ignat\/GPSBabel'
+GPS_TRACK_EDITOR_path = "\\/store\/global-data\/Curinsta2\/Bike_processing_Ignat\/GPS Track Editor"
 
 ###### 3rd party soft cmds #######
-cmd_pos2kml = pos2kml_path + '\/pos2kml.exe'
-cmd_babel = gpsbabel_path + "\gpsbabel.exe"
-cmd_GPS_TRACK_EDITOR = GPS_TRACK_EDITOR_path + "\GpsTrackEditor.exe"
+rnx2rtkp = 'rnx2rtkp'
+
+cmd_pos2kml = rtklib_path + '\/pos2kml.exe'
+cmd_babel = gpsbabel_path + "\/gpsbabel.exe"
+cmd_GPS_TRACK_EDITOR = GPS_TRACK_EDITOR_path + "\/GpsTrackEditor.exe"
 
 GPS_dir = os.getcwd()
 # os.chdir(GPS_dir)
@@ -90,16 +90,18 @@ subprocess.Popen(cmd, shell=True)
 x = input("Press ENTER if you manually start RTKpost")
 
 ### Create dir for raw.pos in BASE/!pos-files
-raw_pos_dir = str(bases_dir) + "\/!pos-files\/"
+raw_pos_dir = str(bases_dir) + "\!pos-files"
 if os.path.isdir(raw_pos_dir) == False:
     os.mkdir(raw_pos_dir)
+
+os.chdir(rtklib_242_path)
 
 ### Run rnx2rtkp for all bases
 if len(obs) == len(nav) == len(sbs) and len(bases) > 0:
     for i in bases:
         cmd = rnx2rtkp + " -k " + ppk_bike_conf + " " + (str(rover_dir) + "\*.obs") + " " + str(i) + \
             " " + (str(rover_dir) + "\*.nav") + " " + (str(rover_dir) + "\*.sbs") + \
-                " > " + raw_pos_dir + "raw_" + str(bases.index(i)) + ".pos"
+                " > " + raw_pos_dir + "\/raw_" + str(bases.index(i)) + ".pos"
         if bases.index(i) < len(bases) - 1:
             subprocess.Popen(cmd, shell=True)
             time.sleep(30)

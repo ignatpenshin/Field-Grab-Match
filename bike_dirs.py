@@ -83,9 +83,9 @@ for photo in listdir():
         print(utc_dt_1)
         exif_timestamp = (utc_dt_1 - datetime(1970, 1, 1)).total_seconds()
         exif_list.append(exif_timestamp)
-        print(exif_list)
+        
 
-print(exif_list)
+
 
 delta_exif = {}
 for i in range(len(exif_list) - 1):
