@@ -1,9 +1,10 @@
 from exif import Image
 from datetime import date, datetime, timedelta
-from os import listdir, chdir
+import os
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+import shutil 
 
 
 ### CREATE MEAN VALUES 
@@ -37,13 +38,24 @@ def coord_editing(i, count, directions_list, gpx_list):
 
     return count, directions_list
 
+main_dir = os.getcwd()
+
+for i in os.listdir():
+    if i.__contains__('GPS'):
+        GPS_dir = os.path.abspath(i)
+
 ### Read GPS
-for i in listdir():
-    if i.__contains__('.csv'):
-        x = i
+for path, dirs, files in os.walk(GPS_dir):
+    for i in files:
+        if i.__contains__('.csv'):
+            csv_file = path + "\/" + i
+            print(csv_file)
+        elif i.__contains__('events'):
+            events = path + "\/" + i
+            print(events)
 
 
-csv = pd.read_csv(x, sep=',')
+csv = pd.read_csv(csv_file, sep=',')
 gpx_list = []
 print('GPS point Date/time changing to total_seconds for ', csv.shape[0], ' points. Please wait!')
 for i in range(csv.shape[0]):
@@ -57,9 +69,7 @@ for i in range(csv.shape[0]):
 ######################################################################################
 
 ### Read events
-for i in listdir():
-    if i.__contains__('events'):
-        f = open(i)
+f = open(events)
 
 events_list = []
 for line in f.readlines():
@@ -74,17 +84,36 @@ for i in range(len(events_list) - 1):
 
 
 ### Read exif times
-chdir('instaOne')
+os.chdir('instaOne')
+for i in os.listdir():
+    if i.__contains__('IMG') == False and i.__contains__('.jpg') == False:
+        os.remove(i)
+insta_dir = os.getcwd() + "\\"
 exif_list = []
-for photo in listdir():
+for photo in os.listdir():
     with open(photo, 'rb') as img:
-        my_image = Image(img)
-        utc_dt_1 = datetime.strptime(my_image.DateTime, '%Y:%m:%d %H:%M:%S')
-        print(utc_dt_1)
-        exif_timestamp = (utc_dt_1 - datetime(1970, 1, 1)).total_seconds()
-        exif_list.append(exif_timestamp)
-        
-
+        try:
+            my_image = Image(img)
+            utc_dt_1 = datetime.strptime(my_image.DateTime, '%Y:%m:%d %H:%M:%S')
+        except KeyError:
+            img.close()
+            print(photo, " is broken. Added to /FAILS")
+            if os.path.exists('FAILS') == False:
+                os.mkdir('FAILS')
+                os.chdir('FAILS')
+                FAILS_dir = os.getcwd() + "\\"
+                os.chdir(insta_dir)
+            os.replace(insta_dir + photo, FAILS_dir + photo)
+            continue
+        else:
+            if len(exif_list) == 0:
+                track_name = 'i01'+ photo[3:19]
+                print('Dir name: ', track_name)
+            print(utc_dt_1)
+            exif_timestamp = (utc_dt_1 - datetime(1970, 1, 1)).total_seconds()
+            exif_list.append(exif_timestamp)
+            img.close()
+       
 
 
 delta_exif = {}
@@ -133,25 +162,33 @@ if mid == 'NO':
 
 ####################################################################################################
 
+os.chdir(main_dir)
+os.mkdir(track_name)
+os.chdir(track_name)
+track_path = os.getcwd()
+os.mkdir('instaOne')
+os.chdir('instaOne')
+track_insta = os.getcwd()
+os.chdir(main_dir)
+
 ### Read InstaOne        
-# chdir('instaOne')
+os.chdir(insta_dir)
 directions_list = []
 count = 0
-for photo in listdir():
-    with open(photo, 'rb') as img:
-        my_image = Image(img)
-        utc_dt_1 = datetime.strptime(my_image.DateTime, '%Y:%m:%d %H:%M:%S')
-        exif_timestamp = (utc_dt_1 - datetime(1970, 1, 1)).total_seconds()
-        photo_data = [photo, exif_timestamp - mid]
-        count, directions_list = coord_editing(photo_data, count, directions_list, gpx_list)
-        print(directions_list[count-1])
+for photo in os.listdir():
+    if photo.__contains__('IMG') and photo.__contains__('.jpg'):
+        with open(photo, 'rb') as img:
+            my_image = Image(img)
+            utc_dt_1 = datetime.strptime(my_image.DateTime, '%Y:%m:%d %H:%M:%S')
+            exif_timestamp = (utc_dt_1 - datetime(1970, 1, 1)).total_seconds()
+            photo_data = [photo, exif_timestamp - mid]
+            count, directions_list = coord_editing(photo_data, count, directions_list, gpx_list)
+            print(directions_list[count-1])
+            shutil.copy(os.path.abspath(photo), track_insta)
         
 
-
 df = pd.DataFrame(directions_list)
-df.to_csv('directions.csv', header=False, sep=';', index=False)
-
-
+df.to_csv(track_path + '\\directions.csv', header=False, sep=';', index=False)
 
 
 
