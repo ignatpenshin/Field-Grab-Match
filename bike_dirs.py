@@ -146,7 +146,7 @@ for i in list_delta_exif[:8]:
     if len(mid_delta) != 0 and max(mid_delta) - min(mid_delta) > 2:
         del mid_delta[-1]
         break
-    if abs(res[0] - i[0]) <= 25: 
+    if abs(res[0] - i[0]) <= 45: 
         mid_delta.append(i[0] - res[0])
 
 
@@ -182,11 +182,23 @@ for photo in os.listdir():
             utc_dt_1 = datetime.strptime(my_image.DateTime, '%Y:%m:%d %H:%M:%S')
             exif_timestamp = (utc_dt_1 - datetime(1970, 1, 1)).total_seconds()
             photo_data = [photo, exif_timestamp - mid]
-            count, directions_list = coord_editing(photo_data, count, directions_list, gpx_list)
-            print(directions_list[count-1])
-            shutil.copy(os.path.abspath(photo), track_insta)
+            try:
+                count, directions_list = coord_editing(photo_data, count, directions_list, gpx_list)
+            except IndexError:
+                img.close()
+                print(photo, " is OUT OF RANGE. Added to /FAILS")
+                if os.path.exists('FAILS') == False:
+                    os.mkdir('FAILS')
+                    os.chdir('FAILS')
+                    FAILS_dir = os.getcwd() + "\\"
+                    os.chdir(insta_dir)
+                os.replace(insta_dir + photo, FAILS_dir + photo)
+                continue       
+            else:
+                print(directions_list[count-1])
+                img.close()
+                shutil.move(os.path.abspath(photo), track_insta)
         
-
 df = pd.DataFrame(directions_list)
 df.to_csv(track_path + '\\directions.csv', header=False, sep=';', index=False)
 
