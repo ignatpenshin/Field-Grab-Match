@@ -5,14 +5,14 @@ import subprocess
 
 
 ### Folders:
-rtklib_path = '\\/store\global-data\Curinsta2\Bike_processing_Ignat\RTKLIB_bin-rtklib_2.4.3\/bin'
-rtklib_242_path = '\\/store\global-data\Curinsta2\Bike_processing_Ignat\/rtklib_2.4.2\/bin'
-rtk_events = '\\/store\global-data\Curinsta2\Bike_processing_Ignat\RTKLIB for BIKE'
-ppk_bike_conf = '\\/store\/global-data\/Curinsta2\/Bike_processing_Ignat\/RTKLIB_bin-rtklib_2.4.3' + '\/ppk_bike.conf'
+rtklib_path = 'Z:\Bike_processing_Ignat\RTKLIB_bin-rtklib_2.4.3\/bin'
+rtklib_242_path = 'Z:\Bike_processing_Ignat\/rtklib_2.4.2\/bin'
+rtk_events = 'Z:\Bike_processing_Ignat\RTKLIB for BIKE'
+ppk_bike_conf = 'Z:\Bike_processing_Ignat\/RTKLIB_bin-rtklib_2.4.3' + '\/ppk_bike.conf'
 
 ###### 3rd party soft paths #######
-gpsbabel_path = '\\/store\global-data\Curinsta2\Bike_processing_Ignat\GPSBabel'
-GPS_TRACK_EDITOR_path = "\\/store\global-data\Curinsta2\Bike_processing_Ignat\GPS Track Editor"
+gpsbabel_path = 'Z:\Bike_processing_Ignat\GPSBabel'
+GPS_TRACK_EDITOR_path = "Z:\Bike_processing_Ignat\GPS Track Editor"
 
 ###### 3rd party soft cmds #######
 rnx2rtkp = 'rnx2rtkp'

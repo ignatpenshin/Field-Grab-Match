@@ -1,10 +1,15 @@
 from exif import Image
 from datetime import date, datetime, timedelta
 import os
+import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import shutil 
+
+var = sys.argv[1]
+os.chdir(var)
+
 
 
 ### CREATE MEAN VALUES 
