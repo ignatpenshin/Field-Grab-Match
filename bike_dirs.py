@@ -7,8 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import shutil 
 
-var = sys.argv[1]
-os.chdir(var)
+#var = sys.argv[1]
+#os.chdir(var)
 
 
 
@@ -26,6 +26,7 @@ def coord_editing(i, count, directions_list, gpx_list):
     head_left, head_right = csv['Heading'].iloc[num_left], csv['Heading'].iloc[num_right]
     lat_left, lat_right = csv['Latitude'].iloc[num_left], csv['Latitude'].iloc[num_right]
     long_left, long_right = csv['Longitude'].iloc[num_left], csv['Longitude'].iloc[num_right]
+    ele_left, ele_right = csv['Elevation (m)'].iloc[num_left], csv['Elevation (m)'].iloc[num_right]
     
     heading = ((1 - abs(delta_left)/(abs(delta_right) + abs(delta_left)))*head_left
                                         + (1 - abs(delta_right)/(abs(delta_right) + abs(delta_left)))*head_right)
@@ -34,11 +35,15 @@ def coord_editing(i, count, directions_list, gpx_list):
     longitude = ((1 - abs(delta_left)/(abs(delta_right) + abs(delta_left)))*long_left
                                         + (1 - abs(delta_right)/(abs(delta_right) + abs(delta_left)))*long_right)
 
-    head_to_dir, lat_to_dir, lon_to_dir= (float('{:.2f}'.format(heading)), 
-                                        float('{:.8f}'.format(latitude)), float('{:.8f}'.format(longitude)))
+    elevation = ((1 - abs(delta_left)/(abs(delta_right) + abs(delta_left)))*ele_left
+                                        + (1 - abs(delta_right)/(abs(delta_right) + abs(delta_left)))*ele_right)
+    print(elevation)
+    head_to_dir, lat_to_dir, lon_to_dir, ele_to_dir = (float('{:.2f}'.format(heading)), 
+                                        float('{:.8f}'.format(latitude)), float('{:.8f}'.format(longitude)), 
+                                                                                        float('{:.3f}'.format(elevation)))
                                       
        
-    directions_list.append([count, i[0], head_to_dir, lat_to_dir, lon_to_dir, 155])
+    directions_list.append([count, i[0], head_to_dir, lat_to_dir, lon_to_dir, ele_to_dir])
     count += 1
 
     return count, directions_list
@@ -158,12 +163,20 @@ for i in list_delta_exif[:8]:
 
 print('Delta time from the data: ', mid_delta)
 print('Median delta is: ', np.median(mid_delta))
-print('Is it okay? If yes - press Enter. If not - write correct value or write NO (== 0.0) !')
-mid = input("Press Enter OR write correct value OR write (NO): ")
-if mid == '':
+#print('Is it okay? If yes - press Enter. If not - write correct value or write NO (== 0.0) !')
+
+if len(mid_delta) > 1:
     mid = np.median(mid_delta)  ### Delta of exif and events
-if mid == 'NO':
+elif len(mid_delta) == 1:
+    mid = mid_delta[0]
+else:
     mid = 0
+
+#mid = input("Press Enter OR write correct value OR write (NO): ")
+#if mid == '':
+#    mid = np.median(mid_delta)  ### Delta of exif and events
+#if mid == 'NO':
+#    mid = 0
 
 ####################################################################################################
 

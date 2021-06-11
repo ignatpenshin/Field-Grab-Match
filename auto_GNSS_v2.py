@@ -229,7 +229,7 @@ time.sleep(2)
 
 user_name = getpass.getuser()
 print("user_name: ", user_name)
-merged_track_path = "C:\\Users\\" + user_name + "\\Documents\\TRACKS"
+merged_track_path = "C:\\Users\\" + user_name + "\\Documents\\_TRACKS"
 print("merged track dir: ", merged_track_path)
 
 os.chdir(GPX_path)
@@ -252,12 +252,12 @@ os.chdir(GPS_TRACK_EDITOR_path)
 cmd = "GpsTrackEditor " + ' '.join(list)
 p1 = subprocess.Popen(cmd, shell=True)
 
-time.sleep(20)
+time.sleep(60)
 
 os.chdir(autogui_path)
 p2 = subprocess.Popen('auto_gui_test.py', shell=True).wait()
 
-time.sleep(5)
+time.sleep(15)
 
 merged_file_name = "final_merged.csv"
 os.chdir(merged_track_path)
