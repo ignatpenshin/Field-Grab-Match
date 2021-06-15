@@ -7,8 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import shutil 
 
-#var = sys.argv[1]
-#os.chdir(var)
+var = sys.argv[1]
+os.chdir(var)
 
 
 

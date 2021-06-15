@@ -40,7 +40,7 @@ GPS_dir = os.getcwd()
 ### -----------------------------------------------------------------------
 
 ### GPS TRACK EDITOR OPP
-def craft_filter(list, iter=3, speed_lim=5, accel_lim=1.4, lim_filter=0.6):
+def craft_filter(list, iter=3, speed_lim=4.5, accel_lim=0.85, lim_filter=0.65):   # iter=3, speed_lim=5, accel_lim=1.4, lim_filter=0.6
     for raw in list:
         print("------------------------------")
         print("Filtering process for ", list.index(raw) + 1, " track from ", len(list))
