@@ -1,3 +1,15 @@
+'''
+Author: Penshin Ignat (HelgiLab Ltd.), 2021
+
+To correctly make post-processing, please, install or update next packeges.
+
+Pip install: exif, numpy, matplotlib, pandas, gpxpy, pykalman, pyautogui, 
+scipy, pywin32, keyboard, opencv-python
+default: time, zipfile, os, subprocess, shutil, getpass, types
+
+''' 
+
+
 1. Run PPK from U-Blox GNSS Rover (raw_*.obs/raw_*.nav/raw_*.sbs) with multiple base stations (*.21o, *.OBS) with rnx2rtkp CUI.
 2. Run RTKpost GUI to create Events.pos time events. 
 3. Convert .pos -> .kml -> .gpx with set of option flags.
