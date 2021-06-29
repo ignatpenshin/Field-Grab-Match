@@ -32,7 +32,7 @@ def coord_editing(i, count, directions_list, gpx_list):
 
     elevation = ((1 - abs(delta_left)/(abs(delta_right) + abs(delta_left)))*ele_left
                                         + (1 - abs(delta_right)/(abs(delta_right) + abs(delta_left)))*ele_right)
-    print(elevation)
+
     head_to_dir, lat_to_dir, lon_to_dir, ele_to_dir = (float('{:.2f}'.format(heading)), 
                                         float('{:.8f}'.format(latitude)), float('{:.8f}'.format(longitude)), 
                                                                                         float('{:.3f}'.format(elevation)))
@@ -94,33 +94,34 @@ def read_exif():
     global exif_list, track_name, insta_dir
     os.chdir('instaOne')
     for i in os.listdir():
-        if i.__contains__('IMG') == False and i.__contains__('.jpg') == False:
+        if os.path.isfile(i) == True and i.__contains__('IMG') == False and i.__contains__('.jpg') == False:
             os.remove(i)
     insta_dir = os.getcwd() + "\\"
     exif_list = []
     for photo in os.listdir():
-        with open(photo, 'rb') as img:
-            try:
-                my_image = Image(img)
-                utc_dt_1 = datetime.strptime(my_image.DateTime, '%Y:%m:%d %H:%M:%S')
-            except KeyError:
-                img.close()
-                print(photo, " is broken. Added to /FAILS")
-                if os.path.exists('FAILS') == False:
-                    os.mkdir('FAILS')
-                    os.chdir('FAILS')
-                    FAILS_dir = os.getcwd() + "\\"
-                    os.chdir(insta_dir)
-                os.replace(insta_dir + photo, FAILS_dir + photo)
-                continue
-            else:
-                if len(exif_list) == 0:
-                    track_name = 'i01'+ photo[3:19]
-                    print('Dir name: ', track_name)
-                print(utc_dt_1)
-                exif_timestamp = (utc_dt_1 - datetime(1970, 1, 1)).total_seconds()
-                exif_list.append(exif_timestamp)
-                img.close()
+        if os.path.isfile(photo) == True:
+            with open(photo, 'rb') as img:
+                try:
+                    my_image = Image(img)
+                    utc_dt_1 = datetime.strptime(my_image.DateTime, '%Y:%m:%d %H:%M:%S')
+                except KeyError:
+                    img.close()
+                    print(photo, " is broken. Added to /FAILS")
+                    if os.path.exists('FAILS') == False:
+                        os.mkdir('FAILS')
+                        os.chdir('FAILS')
+                        FAILS_dir = os.getcwd() + "\\"
+                        os.chdir(insta_dir)
+                    os.replace(insta_dir + photo, FAILS_dir + photo)
+                    continue
+                else:
+                    if len(exif_list) == 0:
+                        track_name = 'i01'+ photo[3:19]
+                        print('Dir name: ', track_name)
+                    print(utc_dt_1)
+                    exif_timestamp = (utc_dt_1 - datetime(1970, 1, 1)).total_seconds()
+                    exif_list.append(exif_timestamp)
+                    img.close()
        
 
 def create_delta(): 
@@ -159,6 +160,7 @@ def create_delta():
         mid = mid_delta[0]
     else:
         mid = 0    ####!!!!!!
+    return mid_delta, mid
 
 ####################################################################################################
 

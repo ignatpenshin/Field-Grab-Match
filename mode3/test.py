@@ -10,10 +10,14 @@ default: time, zipfile, os, subprocess, shutil, getpass, types
 ''' 
 
 import os
+import time
 import sys
+import shutil
+import subprocess
 import logging
 
 scripts_folder = "Z:\Bike_processing_Ignat\mode3"
+PanoAngle_folder = "C:\projects\python\PanoAngle"
 sys.path.append(scripts_folder)
 
 import track_analyzer
@@ -26,6 +30,7 @@ track_analyzer.log()
 logging.basicConfig(format = '%(message)s', filemode='w', \
                              filename='track_log.log', level = logging.INFO)
 
+# dirs 
 var = os.getcwd()
 for i in os.listdir():
     if i.__contains__("GPS"):
@@ -44,6 +49,20 @@ if cond_2 == True:
 print("------------------\n")
 x = int(input("Enter your input to run: "))
 
+#pano_angle
+if os.path.exists(var + "\instaOne\/foto.orig") == False:
+    print("PanoAngle TensorFlow process run..")
+    try:
+        os.chdir(PanoAngle_folder)
+        subprocess.Popen("process.bat " + var + "\instaOne", shell=False).wait()
+        time.sleep(10)
+        logging.info("Pano_angle - DONE")
+    except Exception as Argument:
+        logging.exception("Pano_angle - FAIL")
+        sys.exit(1)
+    os.chdir(GPX_path)
+
+
 if x == int(1):
     scripts.script_1.work(GPS_dir, var, GPX_path)
 elif x == int(2):
@@ -51,4 +70,19 @@ elif x == int(2):
 elif x == int(3):
     scripts.script_3.work(var)
 else:
-    print("Incorrect input. Repeat, please!")
+    input("Incorrect input. Repeat, please!")
+    raise Exception("1 or 2 or 3! NOT ", x)
+
+
+
+
+
+
+os.chdir(var)
+for i in os.listdir():
+    if i.__contains__("track_log.log"):
+        log = os.path.abspath(i)
+    if i.__contains__("i01_"):
+        track_path = os.path.abspath(i)
+shutil.copyfile(log, track_path + '/track_log.log')
+

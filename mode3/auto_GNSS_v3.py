@@ -41,7 +41,7 @@ def try_paths():
     GPS_TRACK_EDITOR_path = "Z:\Bike_processing_Ignat\GPS Track Editor"
     path_control_list.append(GPS_TRACK_EDITOR_path)
     
-    autogui_path = "Z:\Bike_processing_Ignat\AUTOGUI_PYTHON"
+    autogui_path = "Z:\Bike_processing_Ignat\mode3\AUTOGUI_PYTHON"
     path_control_list.append(autogui_path) 
 
     ###### 3rd party soft cmds #######
@@ -206,7 +206,8 @@ def create_nmea_dir():
 ### Run rnx2rtkp for all bases
 def rnx2rtkp_run(GPS_dir):
     os.chdir(rtklib_242_path)
-    if len(obs) == len(nav) == len(sbs) and len(bases) > 0:
+    #if len(obs) == len(nav) == len(sbs) and len(bases) > 0:
+    if len(bases) > 0:
         for i in bases:
             cmd = rnx2rtkp + " -k " + ppk_bike_conf + " " + (str(rover_dir) + "\*.obs") + " " + str(i) + \
                 " " + (str(rover_dir) + "\*.nav") + " " + (str(rover_dir) + "\*.sbs") + \

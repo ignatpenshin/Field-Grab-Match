@@ -70,8 +70,9 @@ def work(GPS_dir, var, GPX_path):
         sys.exit(1)
     #15
     try:
-        bike_dirs_v3.create_delta()
-        logging.info("15 - DONE")
+        x, y = bike_dirs_v3.create_delta()
+        ls_x = ", ".join([str(item) for item in x])
+        logging.info("15 - DONE\n" + "mid_list: " + ls_x + " \n" + "mid: " + str(y))
     except Exception as Argument:
         logging.exception("15 - FAIL")
         sys.exit(1)
