@@ -6,6 +6,7 @@ import gpxpy
 import shutil
 import pandas as pd
 import getpass
+import tarfile
 import matplotlib.pyplot as plt
 from types import LambdaType
 from gpxpy.geo import length_3d
@@ -121,24 +122,69 @@ def craft_filter(list, iter=3, speed_lim=4.5, accel_lim=0.85, lim_filter=0.65): 
 def unzip_bases():
     global bases_dir, bases
     os.chdir('BASE')
+    def tree():
+        os.chdir("rinex")
+        while True:
+            s = os.listdir()
+            if len(s) == 1:
+                os.chdir(s[0])
+            else:
+                return os.listdir()
+
+    trigger = False
+    this_d = os.getcwd()
+    tar_list = os.listdir(this_d)
+
+    for n in tar_list:
+        if n.endswith(".tar"):
+            trigger = True
+            mytar = tarfile.open(n)
+            mytar.extractall()
+            mytar.close()
+    os.chdir(this_d)
+
+    if trigger == True:
+        Bases = tree()
+        hall = os.getcwd()
+        for s in Bases:
+            os.chdir(s)
+            rars = os.listdir()
+            for rar in rars:
+                if rar.endswith(".zip"):
+                    with ZipFile(rar, "r") as zipObj:
+                        zipObj.extractall()
+                        zipObj.close()
+                os.remove(rar)
+            os.chdir(hall)
+            shutil.move(s, this_d)
+        os.chdir(this_d)
+        shutil.rmtree("rinex/")
+        for n in tar_list:
+            if n.endswith(".tar"):
+                os.remove(n)
+
     list_base = os.listdir()
     bases_dir = os.getcwd()
     bases = []
+
     for d in list_base:
         os.chdir(d)
+        cwd = os.getcwd()
         s = os.listdir()
+        ong_base = []
         if len(s) != 0:
             for base in s:
                 if (base.endswith('.21O') or base.endswith('.21o') or base.endswith('.obs')) \
-                                            and bases.__contains__(str(os.path.abspath(base))) != True:
-                    bases.append(os.path.abspath(base))
-                elif base.endswith('.zip'):      
-                    with ZipFile(base, 'r') as zipObj:
-                        zipObj.extractall()
-                    for x in os.listdir():
-                        if (x.endswith('.21O') or x.endswith('.21o') or x.endswith('.obs')) \
-                                            and bases.__contains__(str(os.path.abspath(x))) != True:
-                            bases.append(os.path.abspath(x))
+                                            and ong_base.__contains__(str(os.path.abspath(cwd) + "\*.21o")) != True:
+                    ong_base.append(os.path.abspath(cwd) + "\*.21o")
+                # if (base.endswith('.21N') or base.endswith('.21n')) \
+                                            # and ong_base.__contains__(str(os.path.abspath(cwd) + "\*.21n")) != True:
+                    # ong_base.append(os.path.abspath(cwd) + "\*.21n")
+                # if (base.endswith('.21G') or base.endswith('.21g')) \
+                                            # and ong_base.__contains__(str(os.path.abspath(cwd) + "\*.21g")) != True:
+                    # ong_base.append(os.path.abspath(cwd) + "\*.21g")
+        if len(ong_base) == 1:
+            bases.append(ong_base)
         os.chdir(bases_dir)
     return bases
 
@@ -148,11 +194,13 @@ def unzip_bases():
 def unzip_rover(GPS_dir):
     global rover_dir
     global nav, obs, sbs
+    global o21, p21, b21
     os.chdir(GPS_dir)
     os.chdir('ROVER')
     rover_dir= os.getcwd()
     list_rover = os.listdir()
     nav, obs, sbs = [], [], []
+    o21, p21, b21 = [], [], []
     for d in list_rover:
         if d.endswith('.nav') and nav.__contains__(str(os.path.abspath(d))) != True:
                     nav.append(os.path.abspath(d))
@@ -160,6 +208,14 @@ def unzip_rover(GPS_dir):
                     obs.append(os.path.abspath(d))
         if d.endswith('.sbs') and sbs.__contains__(str(os.path.abspath(d))) != True:
                     sbs.append(os.path.abspath(d))     
+
+        if d.endswith('.21P') and p21.__contains__(str(os.path.abspath(d))) != True:
+                    p21.append(os.path.abspath(d))
+        if d.endswith('.21O') and o21.__contains__(str(os.path.abspath(d))) != True:
+                    o21.append(os.path.abspath(d))
+        if d.endswith('.21B') and b21.__contains__(str(os.path.abspath(d))) != True:
+                    b21.append(os.path.abspath(d)) 
+
         elif d.endswith('.zip'):      
             with ZipFile(d, 'r') as zipObj:
                 zipObj.extractall()
@@ -170,8 +226,17 @@ def unzip_rover(GPS_dir):
                     obs.append(os.path.abspath(x))
                 if x.endswith('.sbs') and sbs.__contains__(str(os.path.abspath(x))) != True:
                     sbs.append(os.path.abspath(x))
+
+                if d.endswith('.21P') and p21.__contains__(str(os.path.abspath(d))) != True:
+                    p21.append(os.path.abspath(d))
+                if d.endswith('.21O') and o21.__contains__(str(os.path.abspath(d))) != True:
+                            o21.append(os.path.abspath(d))
+                if d.endswith('.21B') and b21.__contains__(str(os.path.abspath(d))) != True:
+                            b21.append(os.path.abspath(d)) 
+
     print('BASE found: ', len(bases), '\n', 'NAV found: ', len(nav), '\n',  \
-                                'OBS found: ', len(obs), '\n', 'SBS found: ', len(sbs), '\n')
+                            'OBS found: ', len(obs), '\n', 'SBS found: ', len(sbs), '\n', \
+                                '21P found: ', len(p21), '\n', '21O found: ', len(o21), '\n', '21B found: ', len(b21))
     time.sleep(2)
 
 ### Manually run RTKpost to create EVENTS.pos
@@ -184,7 +249,10 @@ def rtkpost_run():
     if len(is_event_list) == 0:
         print("Manually run RTKpost to create EVENTS.pos")
         print("COPY text below to RTKpost OBS rover and base path:\n")
-        print(rover_dir + "\*.obs\n")
+        if len(o21) > 0:
+            print(rover_dir + "\*.21O\n")
+        if len(obs) > 0:
+            print(rover_dir + "\*.obs\n")
         time.sleep(2)
         os.chdir(rtk_events)
         cmd = "rtkpost"
@@ -205,12 +273,25 @@ def create_nmea_dir():
 
 ### Run rnx2rtkp for all bases
 def rnx2rtkp_run(GPS_dir):
-    os.chdir(rtklib_242_path)
+    os.chdir(rtklib_path)
     #if len(obs) == len(nav) == len(sbs) and len(bases) > 0:
-    if len(bases) > 0:
+    if len(bases) > 0 and len(obs) > 0:
         for i in bases:
-            cmd = rnx2rtkp + " -k " + ppk_bike_conf + " " + (str(rover_dir) + "\*.obs") + " " + str(i) + \
+            cmd = rnx2rtkp + " -k " + ppk_bike_conf + " " + (str(rover_dir) + "\*.obs") + " " + str(i[0]) + \
                 " " + (str(rover_dir) + "\*.nav") + " " + (str(rover_dir) + "\*.sbs") + \
+                    " > " + raw_pos_dir + "\/raw_" + str(bases.index(i)) + ".nmea"
+            print("raw_" + str(bases.index(i)) + ".nmea" " in process...")
+            if bases.index(i) < len(bases) - 1:
+                subprocess.Popen(cmd, shell=True)
+                time.sleep(15)
+            else:
+                print("All raws in process. Please, check rnx2rtkp activitiess in Task Manager.")
+                subprocess.Popen(cmd, shell=True).wait()
+                subprocess.call("echo .nmea creation complete", shell=True)
+    elif len(bases) > 0 and len(o21) > 0:
+        for i in bases:
+            cmd = rnx2rtkp + " -k " + ppk_bike_conf + " " + (str(rover_dir) + "\*.21O") + " " + str(i[0]) + \
+                " " + (str(rover_dir) + "\*.21P") + " " + (str(rover_dir) + "\*.21B") + \
                     " > " + raw_pos_dir + "\/raw_" + str(bases.index(i)) + ".nmea"
             print("raw_" + str(bases.index(i)) + ".nmea" " in process...")
             if bases.index(i) < len(bases) - 1:
@@ -283,11 +364,15 @@ def GPS_TE():
     os.chdir(GPS_TRACK_EDITOR_path)
     cmd = "GpsTrackEditor " + ' '.join(list)
     p1 = subprocess.Popen(cmd, shell=True)
-    time.sleep(60)
-    os.chdir(autogui_path)
-    # p2 = subprocess.Popen('auto_gui_test.py', shell=True).wait()
-    AUTOGUI_PYTHON.auto_gui_test.work()
-    time.sleep(15)
+    s = int(input("Press 1 to RUN AutoGUI / 0 to CLOSE: "))
+    if s == 1:
+        time.sleep(10)
+        os.chdir(autogui_path)
+        # p2 = subprocess.Popen('auto_gui_test.py', shell=True).wait()
+        AUTOGUI_PYTHON.auto_gui_test.work()
+        time.sleep(15)
+    else:
+        raise Exception("BREAK ON MERGE")
 
 # move final track and rename to final.csv for next using 
 def final_merge(GPX_path):
