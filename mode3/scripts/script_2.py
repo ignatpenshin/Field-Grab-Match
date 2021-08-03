@@ -7,7 +7,7 @@ sys.path.append(scripts_folder)
 import auto_GNSS_v3
 import bike_dirs_v3
 
-def work(GPS_dir, var, GPX_path):
+def work(GPS_dir, var, GPX_path, PanoAngle_folder):
     #7
     try:
         auto_GNSS_v3.babel_nmea2gpx(GPS_dir, GPX_path)
@@ -39,6 +39,7 @@ def work(GPS_dir, var, GPX_path):
 
 
     ### Bike_dirs_v3
+
 
     #11
     try:
@@ -78,8 +79,15 @@ def work(GPS_dir, var, GPX_path):
         sys.exit(1)
     #16
     try:
-        bike_dirs_v3.build_track()
+        track_path = bike_dirs_v3.build_track()
         logging.info("16 - DONE")
     except Exception as Argument:
         logging.exception("16 - FAIL")
-        sys.exit(1)    
+        sys.exit(1)
+
+    try:
+        bike_dirs_v3.pano_angle(track_path, PanoAngle_folder)
+        logging.info("17 - Done")
+    except Exception as Argument:
+        logging.exception("17 - FAIL")
+        sys.exit(1)   

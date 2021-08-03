@@ -49,33 +49,17 @@ if cond_2 == True:
 print("------------------\n")
 x = int(input("Enter your input to run: "))
 
-#pano_angle
-if os.path.exists(var + "\instaOne\/foto.orig") == False:
-    print("PanoAngle TensorFlow process run..")
-    try:
-        os.chdir(PanoAngle_folder)
-        subprocess.Popen("process.bat " + var + "\instaOne", shell=False).wait()
-        time.sleep(10)
-        logging.info("Pano_angle - DONE")
-    except Exception as Argument:
-        logging.exception("Pano_angle - FAIL")
-        sys.exit(1)
-    os.chdir(GPX_path)
 
 
 if x == int(1):
-    scripts.script_1.work(GPS_dir, var, GPX_path)
+    scripts.script_1.work(GPS_dir, var, GPX_path, PanoAngle_folder)
 elif x == int(2):
-    scripts.script_2.work(GPS_dir, var, GPX_path)
+    scripts.script_2.work(GPS_dir, var, GPX_path, PanoAngle_folder)
 elif x == int(3):
-    scripts.script_3.work(var)
+    scripts.script_3.work(var, PanoAngle_folder, GPX_path)
 else:
     input("Incorrect input. Repeat, please!")
     raise Exception("1 or 2 or 3! NOT ", x)
-
-
-
-
 
 
 os.chdir(var)

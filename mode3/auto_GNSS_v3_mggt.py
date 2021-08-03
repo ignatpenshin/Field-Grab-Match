@@ -6,6 +6,7 @@ import gpxpy
 import shutil
 import pandas as pd
 import getpass
+import tarfile
 import matplotlib.pyplot as plt
 from types import LambdaType
 from gpxpy.geo import length_3d
@@ -121,24 +122,69 @@ def craft_filter(list, iter=3, speed_lim=4.5, accel_lim=0.85, lim_filter=0.65): 
 def unzip_bases():
     global bases_dir, bases
     os.chdir('BASE')
+    def tree():
+        os.chdir("rinex")
+        while True:
+            s = os.listdir()
+            if len(s) == 1:
+                os.chdir(s[0])
+            else:
+                return os.listdir()
+
+    trigger = False
+    this_d = os.getcwd()
+    tar_list = os.listdir(this_d)
+
+    for n in tar_list:
+        if n.endswith(".tar"):
+            trigger = True
+            mytar = tarfile.open(n)
+            mytar.extractall()
+            mytar.close()
+    os.chdir(this_d)
+
+    if trigger == True:
+        Bases = tree()
+        hall = os.getcwd()
+        for s in Bases:
+            os.chdir(s)
+            rars = os.listdir()
+            for rar in rars:
+                if rar.endswith(".zip"):
+                    with ZipFile(rar, "r") as zipObj:
+                        zipObj.extractall()
+                        zipObj.close()
+                os.remove(rar)
+            os.chdir(hall)
+            shutil.move(s, this_d)
+        os.chdir(this_d)
+        shutil.rmtree("rinex/")
+        for n in tar_list:
+            if n.endswith(".tar"):
+                os.remove(n)
+
     list_base = os.listdir()
     bases_dir = os.getcwd()
     bases = []
+
     for d in list_base:
         os.chdir(d)
+        cwd = os.getcwd()
         s = os.listdir()
+        ong_base = []
         if len(s) != 0:
             for base in s:
                 if (base.endswith('.21O') or base.endswith('.21o') or base.endswith('.obs')) \
-                                            and bases.__contains__(str(os.path.abspath(base))) != True:
-                    bases.append(os.path.abspath(base))
-                elif base.endswith('.zip'):      
-                    with ZipFile(base, 'r') as zipObj:
-                        zipObj.extractall()
-                    for x in os.listdir():
-                        if (x.endswith('.21O') or x.endswith('.21o') or x.endswith('.obs')) \
-                                            and bases.__contains__(str(os.path.abspath(x))) != True:
-                            bases.append(os.path.abspath(x))
+                                            and ong_base.__contains__(str(os.path.abspath(cwd) + "\*.21o")) != True:
+                    ong_base.append(os.path.abspath(cwd) + "\*.21o")
+                # if (base.endswith('.21N') or base.endswith('.21n')) \
+                                            # and ong_base.__contains__(str(os.path.abspath(cwd) + "\*.21n")) != True:
+                    # ong_base.append(os.path.abspath(cwd) + "\*.21n")
+                # if (base.endswith('.21G') or base.endswith('.21g')) \
+                                            # and ong_base.__contains__(str(os.path.abspath(cwd) + "\*.21g")) != True:
+                    # ong_base.append(os.path.abspath(cwd) + "\*.21g")
+        if len(ong_base) == 1:
+            bases.append(ong_base)
         os.chdir(bases_dir)
     return bases
 
@@ -231,7 +277,7 @@ def rnx2rtkp_run(GPS_dir):
     #if len(obs) == len(nav) == len(sbs) and len(bases) > 0:
     if len(bases) > 0 and len(obs) > 0:
         for i in bases:
-            cmd = rnx2rtkp + " -k " + ppk_bike_conf + " " + (str(rover_dir) + "\*.obs") + " " + str(i) + \
+            cmd = rnx2rtkp + " -k " + ppk_bike_conf + " " + (str(rover_dir) + "\*.obs") + " " + str(i[0]) + \
                 " " + (str(rover_dir) + "\*.nav") + " " + (str(rover_dir) + "\*.sbs") + \
                     " > " + raw_pos_dir + "\/raw_" + str(bases.index(i)) + ".nmea"
             print("raw_" + str(bases.index(i)) + ".nmea" " in process...")
@@ -244,7 +290,7 @@ def rnx2rtkp_run(GPS_dir):
                 subprocess.call("echo .nmea creation complete", shell=True)
     elif len(bases) > 0 and len(o21) > 0:
         for i in bases:
-            cmd = rnx2rtkp + " -k " + ppk_bike_conf + " " + (str(rover_dir) + "\*.21O") + " " + str(i) + \
+            cmd = rnx2rtkp + " -k " + ppk_bike_conf + " " + (str(rover_dir) + "\*.21O") + " " + str(i[0]) + \
                 " " + (str(rover_dir) + "\*.21P") + " " + (str(rover_dir) + "\*.21B") + \
                     " > " + raw_pos_dir + "\/raw_" + str(bases.index(i)) + ".nmea"
             print("raw_" + str(bases.index(i)) + ".nmea" " in process...")

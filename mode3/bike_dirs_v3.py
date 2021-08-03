@@ -5,6 +5,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import shutil 
+import logging
+import subprocess
+import time
+import sys
 
 
 ### CREATE MEAN VALUES 
@@ -42,6 +46,20 @@ def coord_editing(i, count, directions_list, gpx_list):
     count += 1
 
     return count, directions_list
+
+#pano_angle - RUNS LAST!!!!
+def pano_angle(var, PanoAngle_folder):    
+    if os.path.exists(var + "\instaOne\/foto.orig") == False:
+        print("PanoAngle TensorFlow process run..")
+        try:
+            os.chdir(PanoAngle_folder)
+            subprocess.Popen("createpancor.bat " + var + "\instaOne", shell=False).wait()
+            time.sleep(10)
+            logging.info("Pano_angle - DONE")
+        except Exception as Argument:
+            logging.exception("Pano_angle - FAIL")
+            sys.exit(1)
+        # os.chdir(GPX_path)
 
 def get_dirs(var):
     global main_dir, GPS_dir
@@ -84,8 +102,12 @@ def read_events():
     events_list = []
     for line in f.readlines():
         if line.startswith('%') == False:
-            events_list.append((datetime.strptime(line.split('   ')[0], '%Y/%m/%d %H:%M:%S.%f') 
-                                         - datetime(1970, 1, 1) + timedelta(hours=2, minutes=59, seconds=42)).total_seconds())
+            time = (datetime.strptime(line.split('   ')[0], '%Y/%m/%d %H:%M:%S.%f') 
+                                          - datetime(1970, 1, 1) + timedelta(hours=2, minutes=59, seconds=42)).total_seconds()
+            if time not in events_list:
+                events_list.append(time)
+            # events_list.append((datetime.strptime(line.split('   ')[0], '%Y/%m/%d %H:%M:%S.%f') 
+            #                              - datetime(1970, 1, 1) + timedelta(hours=2, minutes=59, seconds=42)).total_seconds())
 
 
 ### Read exif times
@@ -143,12 +165,12 @@ def create_delta():
     list_delta_events.sort(key=lambda i: i[1], reverse=True)
 
     mid_delta = []
-    for i in list_delta_exif[:8]:
-        res = min(list_delta_events[:8], key=lambda x: abs(i[0] - x[0]))
+    for i in list_delta_exif[:10]:
+        res = min(list_delta_events[:10], key=lambda x: abs(i[0] - x[0]))
         if len(mid_delta) != 0 and max(mid_delta) - min(mid_delta) > 2:
             del mid_delta[-1]
             break
-        if abs(res[0] - i[0]) <= 45: 
+        if abs(res[0] - i[0]) <= 20: 
             mid_delta.append(i[0] - res[0])
 
     print('Delta time from the data: ', mid_delta)
@@ -203,6 +225,8 @@ def build_track():
                     shutil.move(os.path.abspath(photo), track_insta)
     df = pd.DataFrame(directions_list)
     df.to_csv(track_path + '\\directions.csv', header=False, sep=';', index=False)
+    time.sleep(5)
+    return track_path
 
 
 
