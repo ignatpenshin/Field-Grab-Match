@@ -127,18 +127,15 @@ def unzip_bases():
     for d in list_base:
         os.chdir(d)
         s = os.listdir()
-        if len(s) != 0:
-            for base in s:
-                if (base.endswith('.21O') or base.endswith('.21o') or base.endswith('.obs')) \
-                                            and bases.__contains__(str(os.path.abspath(base))) != True:
-                    bases.append(os.path.abspath(base))
-                elif base.endswith('.zip'):      
-                    with ZipFile(base, 'r') as zipObj:
-                        zipObj.extractall()
-                    for x in os.listdir():
-                        if (x.endswith('.21O') or x.endswith('.21o') or x.endswith('.obs')) \
-                                            and bases.__contains__(str(os.path.abspath(x))) != True:
-                            bases.append(os.path.abspath(x))
+        for file in s:
+            if file.endswith('.zip'):
+                with ZipFile(file, 'r') as zipObj:
+                    zipObj.extractall()
+        s = os.listdir()
+        for file in s:
+            if file.endswith('.22O') or file.endswith('.22o') or file.endswith('.obs'):
+                bases.append(os.path.abspath(file))
+
         os.chdir(bases_dir)
     return bases
 
@@ -148,49 +145,29 @@ def unzip_bases():
 def unzip_rover(GPS_dir):
     global rover_dir
     global nav, obs, sbs
-    global o21, p21, b21
+    global o22, p22, b22
     os.chdir(GPS_dir)
     os.chdir('ROVER')
     rover_dir= os.getcwd()
     list_rover = os.listdir()
     nav, obs, sbs = [], [], []
-    o21, p21, b21 = [], [], []
+    o22, p22, b22 = [], [], []
+
     for d in list_rover:
-        if d.endswith('.nav') and nav.__contains__(str(os.path.abspath(d))) != True:
-                    nav.append(os.path.abspath(d))
-        if d.endswith('.obs') and obs.__contains__(str(os.path.abspath(d))) != True:
-                    obs.append(os.path.abspath(d))
-        if d.endswith('.sbs') and sbs.__contains__(str(os.path.abspath(d))) != True:
-                    sbs.append(os.path.abspath(d))     
-
-        if d.endswith('.21P') and p21.__contains__(str(os.path.abspath(d))) != True:
-                    p21.append(os.path.abspath(d))
-        if d.endswith('.21O') and o21.__contains__(str(os.path.abspath(d))) != True:
-                    o21.append(os.path.abspath(d))
-        if d.endswith('.21B') and b21.__contains__(str(os.path.abspath(d))) != True:
-                    b21.append(os.path.abspath(d)) 
-
-        elif d.endswith('.zip'):      
-            with ZipFile(d, 'r') as zipObj:
-                zipObj.extractall()
-            for x in os.listdir():
-                if x.endswith('.nav') and nav.__contains__(str(os.path.abspath(x))) != True:
-                    nav.append(os.path.abspath(x))
-                if x.endswith('.obs') and obs.__contains__(str(os.path.abspath(x))) != True:
-                    obs.append(os.path.abspath(x))
-                if x.endswith('.sbs') and sbs.__contains__(str(os.path.abspath(x))) != True:
-                    sbs.append(os.path.abspath(x))
-
-                if d.endswith('.21P') and p21.__contains__(str(os.path.abspath(d))) != True:
-                    p21.append(os.path.abspath(d))
-                if d.endswith('.21O') and o21.__contains__(str(os.path.abspath(d))) != True:
-                            o21.append(os.path.abspath(d))
-                if d.endswith('.21B') and b21.__contains__(str(os.path.abspath(d))) != True:
-                            b21.append(os.path.abspath(d)) 
+        if d.endswith('.zip'):
+            with ZipFile(d, 'r') as zipObj: zipObj.extractall()
+    list_rover = os.listdir()
+    for d in list_rover:
+        if d.endswith('.nav'): nav.append(os.path.abspath(d))
+        if d.endswith('.obs'): obs.append(os.path.abspath(d))
+        if d.endswith('.sbs'): sbs.append(os.path.abspath(d))
+        if d.endswith('.22P'): p22.append(os.path.abspath(d))
+        if d.endswith('.22O'): o22.append(os.path.abspath(d))
+        if d.endswith('.22B'): b22.append(os.path.abspath(d))
 
     print('BASE found: ', len(bases), '\n', 'NAV found: ', len(nav), '\n',  \
                             'OBS found: ', len(obs), '\n', 'SBS found: ', len(sbs), '\n', \
-                                '21P found: ', len(p21), '\n', '21O found: ', len(o21), '\n', '21B found: ', len(b21))
+                                '22P found: ', len(p22), '\n', '22O found: ', len(o22), '\n', '22B found: ', len(b22))
     time.sleep(2)
 
 ### Manually run RTKpost to create EVENTS.pos
@@ -203,8 +180,8 @@ def rtkpost_run():
     if len(is_event_list) == 0:
         print("Manually run RTKpost to create EVENTS.pos")
         print("COPY text below to RTKpost OBS rover and base path:\n")
-        if len(o21) > 0:
-            print(rover_dir + "\*.21O\n")
+        if len(o22) > 0:
+            print(rover_dir + "\*.22O\n")
         if len(obs) > 0:
             print(rover_dir + "\*.obs\n")
         time.sleep(2)
@@ -242,10 +219,10 @@ def rnx2rtkp_run(GPS_dir):
                 print("All raws in process. Please, check rnx2rtkp activitiess in Task Manager.")
                 subprocess.Popen(cmd, shell=True).wait()
                 subprocess.call("echo .nmea creation complete", shell=True)
-    elif len(bases) > 0 and len(o21) > 0:
+    elif len(bases) > 0 and len(o22) > 0:
         for i in bases:
-            cmd = rnx2rtkp + " -k " + ppk_bike_conf + " " + (str(rover_dir) + "\*.21O") + " " + str(i) + \
-                " " + (str(rover_dir) + "\*.21P") + " " + (str(rover_dir) + "\*.21B") + \
+            cmd = rnx2rtkp + " -k " + ppk_bike_conf + " " + (str(rover_dir) + "\*.22O") + " " + str(i) + \
+                " " + (str(rover_dir) + "\*.22P") + " " + (str(rover_dir) + "\*.22B") + \
                     " > " + raw_pos_dir + "\/raw_" + str(bases.index(i)) + ".nmea"
             print("raw_" + str(bases.index(i)) + ".nmea" " in process...")
             if bases.index(i) < len(bases) - 1:
