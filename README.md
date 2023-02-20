@@ -1,5 +1,5 @@
 '''
-Author: Penshin Ignat (HelgiLab Ltd.), 2021
+Author: Penshin Ignat, 2021
 
 To correctly make post-processing, please, install or update next packeges.
 
